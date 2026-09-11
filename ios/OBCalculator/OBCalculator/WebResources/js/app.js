@@ -14,19 +14,20 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnClear = document.getElementById('btnClear');
   const btnSetToday = document.getElementById('btnSetToday');
 
-  // LMP / EDD 欄位組
-  const mainDateFieldGroup = document.getElementById('mainDateFieldGroup');
-  const mainDateLabel = document.getElementById('mainDateLabel');
-  const mainDateInput = document.getElementById('mainDateInput');
+  // LMP / EDD 欄位
+  const lmpDateInput = document.getElementById('lmpDateInput');
+  const eddDateInput = document.getElementById('eddDateInput');
 
   // 超音波欄位組
-  const usFieldGroup = document.getElementById('usFieldGroup');
   const usScanDateInput = document.getElementById('usScanDateInput');
   const crlInput = document.getElementById('crlInput');
   const gsInput = document.getElementById('gsInput');
 
   // 查詢日期欄位
   const queryDateInput = document.getElementById('queryDateInput');
+
+  // 滑動軌道 (Slider Track)
+  const sliderTrack = document.getElementById('sliderTrack');
 
   // 結果卡片元件
   const resultCardLabel = document.getElementById('resultCardLabel');
@@ -48,57 +49,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 預設 LMP 為 8 週前 (讓醫師一開畫面即可看見示範)
   const defaultInitialLmp = addDays(today, -56);
-  mainDateInput.value = formatDate(defaultInitialLmp);
+  if (lmpDateInput) lmpDateInput.value = formatDate(defaultInitialLmp);
 
   const MODES = ['lmp', 'edd', 'us'];
 
-  const inputCard = document.querySelector('.input-card');
-
-  // 1. 統一模式切換核心函數 (含 iOS 原生平滑換頁動畫)
-  function switchMode(mode, animDirection = null) {
+  // 1. 統一模式切換核心函數 (驅動全幅水平滑動軌道)
+  function switchMode(mode) {
     if (!MODES.includes(mode) || mode === currentMode) return;
-    const prevIndex = MODES.indexOf(currentMode);
-    const nextIndex = MODES.indexOf(mode);
-    const direction = animDirection || (nextIndex > prevIndex ? 'next' : 'prev');
     currentMode = mode;
 
     modeBtns.forEach(btn => {
       btn.classList.toggle('active', btn.dataset.mode === mode);
     });
 
-    // 觸發 iOS 原生硬體加速滑移換頁動畫
-    if (inputCard) {
-      inputCard.classList.remove('slide-in-from-right', 'slide-in-from-left');
-      void inputCard.offsetWidth; // 觸發 DOM 重繪
-      inputCard.classList.add(direction === 'next' ? 'slide-in-from-right' : 'slide-in-from-left');
-    }
-
     if (mode === 'lmp') {
       cardTitle.textContent = '輸入末次月經日期';
-      mainDateFieldGroup.style.display = '';
-      usFieldGroup.style.display = 'none';
+      if (sliderTrack) sliderTrack.style.transform = 'translate3d(0%, 0, 0)';
       if (usScanRow) usScanRow.style.display = 'none';
-      mainDateLabel.innerHTML = '末次月經第一天 <span class="field-sub">LMP</span>';
       resultCardLabel.textContent = '指定日期孕週 (GA)';
       resultSubLabel.textContent = '預產期 EDD (40W)';
-      if (currentResult && currentResult.lmp) {
-        mainDateInput.value = formatDate(currentResult.lmp);
+      if (currentResult && currentResult.lmp && lmpDateInput) {
+        lmpDateInput.value = formatDate(currentResult.lmp);
       }
     } else if (mode === 'edd') {
       cardTitle.textContent = '查詢指定日期孕週';
-      mainDateFieldGroup.style.display = '';
-      usFieldGroup.style.display = 'none';
+      if (sliderTrack) sliderTrack.style.transform = 'translate3d(-33.3333%, 0, 0)';
       if (usScanRow) usScanRow.style.display = 'none';
-      mainDateLabel.innerHTML = '預產期 <span class="field-sub">EDD / EDC</span>';
       resultCardLabel.textContent = '指定日期孕週 (GA)';
       resultSubLabel.textContent = '預產期 EDD (40W)';
-      if (currentResult && currentResult.edd) {
-        mainDateInput.value = formatDate(currentResult.edd);
+      if (currentResult && currentResult.edd && eddDateInput) {
+        eddDateInput.value = formatDate(currentResult.edd);
       }
     } else if (mode === 'us') {
       cardTitle.textContent = '超音波數值推算';
-      mainDateFieldGroup.style.display = 'none';
-      usFieldGroup.style.display = 'flex';
+      if (sliderTrack) sliderTrack.style.transform = 'translate3d(-66.6666%, 0, 0)';
       if (usScanRow) usScanRow.style.display = 'flex';
       resultCardLabel.textContent = '查詢日期孕週 (GA)';
       resultSubLabel.textContent = '推算預產期 (40W)';
@@ -108,6 +92,9 @@ document.addEventListener('DOMContentLoaded', () => {
         crlInput.value = '15.0';
       }
     }
+
+    updateCalculation();
+  }
 
     updateCalculation();
   }
@@ -162,7 +149,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 2. 一鍵清空所有欄位與結果
   function resetAllFields() {
-    mainDateInput.value = '';
+    if (lmpDateInput) lmpDateInput.value = '';
+    if (eddDateInput) eddDateInput.value = '';
     if (crlInput) crlInput.value = '';
     if (gsInput) gsInput.value = '';
     const today = new Date();
@@ -187,8 +175,14 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // 4. 輸入變更監聽
-  mainDateInput.addEventListener('change', updateCalculation);
-  mainDateInput.addEventListener('input', updateCalculation);
+  if (lmpDateInput) {
+    lmpDateInput.addEventListener('change', updateCalculation);
+    lmpDateInput.addEventListener('input', updateCalculation);
+  }
+  if (eddDateInput) {
+    eddDateInput.addEventListener('change', updateCalculation);
+    eddDateInput.addEventListener('input', updateCalculation);
+  }
   queryDateInput.addEventListener('change', updateCalculation);
   queryDateInput.addEventListener('input', updateCalculation);
 
@@ -198,14 +192,10 @@ document.addEventListener('DOMContentLoaded', () => {
     usScanDateInput.addEventListener('input', updateCalculation);
   }
   if (crlInput) {
-    crlInput.addEventListener('input', () => {
-      updateCalculation();
-    });
+    crlInput.addEventListener('input', updateCalculation);
   }
   if (gsInput) {
-    gsInput.addEventListener('input', () => {
-      updateCalculation();
-    });
+    gsInput.addEventListener('input', updateCalculation);
   }
 
   // 5. 核心計算函數
@@ -251,7 +241,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // LMP / EDD 模式
-    const inputDate = parseLocalDate(mainDateInput.value);
+    const inputDate = currentMode === 'lmp'
+      ? parseLocalDate(lmpDateInput.value)
+      : parseLocalDate(eddDateInput.value);
+
     if (!inputDate) {
       resultGaDisplay.textContent = '-- 週 + - 天';
       resultBadge.textContent = '--';

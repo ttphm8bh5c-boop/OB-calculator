@@ -136,6 +136,29 @@ body {
   opacity: 0.6;
 }
 
+/* 全幅滑移視窗與滑動軌道 (Apple HIG Page View Controller 視覺體驗) */
+.card-slider-viewport {
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.card-slider-track {
+  display: flex;
+  width: 300%;
+  transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.card-slide-panel {
+  width: 33.3333%;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 1px 0;
+}
+
 /* 欄位群組 */
 .field-group {
   display: flex;
