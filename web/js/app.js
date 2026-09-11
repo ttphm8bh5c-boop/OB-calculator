@@ -52,14 +52,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const MODES = ['lmp', 'edd', 'us'];
 
-  // 1. 統一模式切換核心函數
-  function switchMode(mode) {
+  const inputCard = document.querySelector('.input-card');
+
+  // 1. 統一模式切換核心函數 (含 iOS 原生平滑換頁動畫)
+  function switchMode(mode, animDirection = null) {
     if (!MODES.includes(mode) || mode === currentMode) return;
+    const prevIndex = MODES.indexOf(currentMode);
+    const nextIndex = MODES.indexOf(mode);
+    const direction = animDirection || (nextIndex > prevIndex ? 'next' : 'prev');
     currentMode = mode;
 
     modeBtns.forEach(btn => {
       btn.classList.toggle('active', btn.dataset.mode === mode);
     });
+
+    // 觸發 iOS 原生硬體加速滑移換頁動畫
+    if (inputCard) {
+      inputCard.classList.remove('slide-in-from-right', 'slide-in-from-left');
+      void inputCard.offsetWidth; // 觸發 DOM 重繪
+      inputCard.classList.add(direction === 'next' ? 'slide-in-from-right' : 'slide-in-from-left');
+    }
 
     if (mode === 'lmp') {
       cardTitle.textContent = '輸入末次月經日期';
@@ -132,14 +144,14 @@ document.addEventListener('DOMContentLoaded', () => {
       if (duration < 500 && Math.abs(deltaX) > 45 && Math.abs(deltaX) > Math.abs(deltaY) * 1.4) {
         const currentIndex = MODES.indexOf(currentMode);
         if (deltaX < 0) {
-          // 向左滑動 (Swipe Left) -> 切換至右邊下一個模式 (例如 LMP -> EDC -> 超音波)
+          // 向左滑動 (Swipe Left) -> 右側內容滑入
           if (currentIndex < MODES.length - 1) {
-            switchMode(MODES[currentIndex + 1]);
+            switchMode(MODES[currentIndex + 1], 'next');
           }
         } else {
-          // 向右滑動 (Swipe Right) -> 切換至左邊上一個模式 (例如 超音波 -> EDC -> LMP)
+          // 向右滑動 (Swipe Right) -> 左側內容滑入
           if (currentIndex > 0) {
-            switchMode(MODES[currentIndex - 1]);
+            switchMode(MODES[currentIndex - 1], 'prev');
           }
         }
       }
