@@ -86,11 +86,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (usScanRow) usScanRow.style.display = 'flex';
       resultCardLabel.textContent = '查詢日期孕週 (GA)';
       resultSubLabel.textContent = '推算預產期 (40W)';
-      
-      // 若尚未填寫數值，提供常用示範值 CRL 15mm
-      if (!crlInput.value && !gsInput.value) {
-        crlInput.value = '15.0';
-      }
     }
 
     updateCalculation();
