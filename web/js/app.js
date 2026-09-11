@@ -1,42 +1,52 @@
 /**
  * OB Calculator Application Controller
  * 精確對齊原型規範：
- * 1. 選擇模式：[LMP 算預產期] / [預產期查孕週]
- * 2. 第二欄位：輸入 LMP / EDC
+ * 1. 選擇模式：[LMP 算預產期] / [預產期查孕週] / [超音波推算]
+ * 2. 第二欄位：輸入 LMP / EDC 或 超音波檢查日 + CRL / GS
  * 3. 第三欄位：查詢日期 (預設今天)
- * 4. 最下面：換算的週數 (指定日期孕週) 與預產期
+ * 4. 最下面：換算的週數 (指定日期孕週) 與預產期、滿20週日
  */
 
 document.addEventListener('DOMContentLoaded', () => {
   // 模式切換按鈕
   const modeBtns = document.querySelectorAll('.mode-nav-btn');
   const cardTitle = document.getElementById('cardTitle');
-  const mainDateLabel = document.getElementById('mainDateLabel');
-  const mainDateHint = document.getElementById('mainDateHint');
-  const mainDateInput = document.getElementById('mainDateInput');
-  const queryDateInput = document.getElementById('queryDateInput');
   const btnClear = document.getElementById('btnClear');
   const btnSetToday = document.getElementById('btnSetToday');
-  const btnCopyNote = document.getElementById('btnCopyNote');
+
+  // LMP / EDD 欄位組
+  const mainDateFieldGroup = document.getElementById('mainDateFieldGroup');
+  const mainDateLabel = document.getElementById('mainDateLabel');
+  const mainDateInput = document.getElementById('mainDateInput');
+
+  // 超音波欄位組
+  const usFieldGroup = document.getElementById('usFieldGroup');
+  const usScanDateInput = document.getElementById('usScanDateInput');
+  const crlInput = document.getElementById('crlInput');
+  const gsInput = document.getElementById('gsInput');
+
+  // 查詢日期欄位
+  const queryDateInput = document.getElementById('queryDateInput');
 
   // 結果卡片元件
   const resultCardLabel = document.getElementById('resultCardLabel');
   const resultBadge = document.getElementById('resultBadge');
   const resultGaDisplay = document.getElementById('resultGaDisplay');
+  const resultSubLabel = document.getElementById('resultSubLabel');
   const resultEddDisplay = document.getElementById('resultEddDisplay');
   const resultWeek20Display = document.getElementById('resultWeek20Display');
-  const resultFooterHint = document.getElementById('resultFooterHint');
-  const toast = document.getElementById('toast');
+  const usScanRow = document.getElementById('usScanRow');
+  const resultScanGaDisplay = document.getElementById('resultScanGaDisplay');
 
-  let currentMode = 'lmp'; // 'lmp' | 'edd'
+  let currentMode = 'lmp'; // 'lmp' | 'edd' | 'us'
   let currentResult = null;
-
 
   // 初始化日期
   const today = new Date();
   queryDateInput.value = formatDate(today);
+  if (usScanDateInput) usScanDateInput.value = formatDate(today);
 
-  // 預設 LMP 為 8 週前 (讓醫師一開畫面即可看見計算示範，亦可隨時清除)
+  // 預設 LMP 為 8 週前 (讓醫師一開畫面即可看見示範)
   const defaultInitialLmp = addDays(today, -56);
   mainDateInput.value = formatDate(defaultInitialLmp);
 
@@ -50,21 +60,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (mode === 'lmp') {
         cardTitle.textContent = '輸入末次月經日期';
+        mainDateFieldGroup.style.display = '';
+        usFieldGroup.style.display = 'none';
+        if (usScanRow) usScanRow.style.display = 'none';
         mainDateLabel.innerHTML = '末次月經第一天 <span class="field-sub">LMP</span>';
-        if (mainDateHint) mainDateHint.textContent = '以月經第一天為孕期起算日。';
         resultCardLabel.textContent = '指定日期孕週 (GA)';
-        if (resultSubLabel) resultSubLabel.textContent = '預產期 EDD (40W)';
+        resultSubLabel.textContent = '預產期 EDD (40W)';
         if (currentResult && currentResult.lmp) {
           mainDateInput.value = formatDate(currentResult.lmp);
         }
-      } else {
+      } else if (mode === 'edd') {
         cardTitle.textContent = '查詢指定日期孕週';
+        mainDateFieldGroup.style.display = '';
+        usFieldGroup.style.display = 'none';
+        if (usScanRow) usScanRow.style.display = 'none';
         mainDateLabel.innerHTML = '預產期 <span class="field-sub">EDD / EDC</span>';
-        if (mainDateHint) mainDateHint.textContent = '輸入已排定之預產期。';
         resultCardLabel.textContent = '指定日期孕週 (GA)';
-        if (resultSubLabel) resultSubLabel.textContent = '末次月經推算 LMP';
+        resultSubLabel.textContent = '預產期 EDD (40W)';
         if (currentResult && currentResult.edd) {
           mainDateInput.value = formatDate(currentResult.edd);
+        }
+      } else if (mode === 'us') {
+        cardTitle.textContent = '超音波數值推算';
+        mainDateFieldGroup.style.display = 'none';
+        usFieldGroup.style.display = 'flex';
+        if (usScanRow) usScanRow.style.display = 'flex';
+        resultCardLabel.textContent = '查詢日期孕週 (GA)';
+        resultSubLabel.textContent = '推算預產期 (40W)';
+        
+        // 若尚未填寫數值，提供常用示範值 CRL 15mm
+        if (!crlInput.value && !gsInput.value) {
+          crlInput.value = '15.0';
         }
       }
 
@@ -74,15 +100,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 2. 清除按鈕
   btnClear.addEventListener('click', () => {
-    mainDateInput.value = '';
+    if (currentMode === 'us') {
+      crlInput.value = '';
+      gsInput.value = '';
+      usScanDateInput.value = formatDate(new Date());
+    } else {
+      mainDateInput.value = '';
+    }
     currentResult = null;
     resultGaDisplay.textContent = '-- 週 + - 天';
     resultBadge.textContent = '--';
     resultEddDisplay.textContent = '-- 年 -- 月 -- 日';
     if (resultWeek20Display) resultWeek20Display.textContent = '-- 年 -- 月 -- 日';
-    if (resultFooterHint) {
-      resultFooterHint.textContent = currentMode === 'lmp' ? '選擇 LMP 日期後顯示結果' : '選擇預產期後顯示結果';
-    }
+    if (resultScanGaDisplay) resultScanGaDisplay.textContent = '-- 週 + - 天';
   });
 
   // 3. 查詢日期設為「今天」
@@ -97,19 +127,71 @@ document.addEventListener('DOMContentLoaded', () => {
   queryDateInput.addEventListener('change', updateCalculation);
   queryDateInput.addEventListener('input', updateCalculation);
 
+  // 超音波輸入監聽
+  if (usScanDateInput) {
+    usScanDateInput.addEventListener('change', updateCalculation);
+    usScanDateInput.addEventListener('input', updateCalculation);
+  }
+  if (crlInput) {
+    crlInput.addEventListener('input', () => {
+      updateCalculation();
+    });
+  }
+  if (gsInput) {
+    gsInput.addEventListener('input', () => {
+      updateCalculation();
+    });
+  }
+
   // 5. 核心計算函數
   function updateCalculation() {
-    const inputDate = parseLocalDate(mainDateInput.value);
     const queryDate = parseLocalDate(queryDateInput.value) || new Date();
 
+    if (currentMode === 'us') {
+      const scanDate = parseLocalDate(usScanDateInput.value) || new Date();
+      const crlVal = crlInput.value ? parseFloat(crlInput.value) : null;
+      const gsVal = gsInput.value ? parseFloat(gsInput.value) : null;
+
+      if ((crlVal === null || isNaN(crlVal) || crlVal <= 0) &&
+          (gsVal === null || isNaN(gsVal) || gsVal <= 0)) {
+        resultGaDisplay.textContent = '-- 週 + - 天';
+        resultBadge.textContent = '請輸入數值';
+        resultEddDisplay.textContent = '-- 年 -- 月 -- 日';
+        if (resultWeek20Display) resultWeek20Display.textContent = '-- 年 -- 月 -- 日';
+        if (resultScanGaDisplay) resultScanGaDisplay.textContent = '-- 週 + - 天';
+        currentResult = null;
+        return;
+      }
+
+      let res = null;
+      // 優先依 CRL 計算 (國際黃金標準)，否則依 GS 計算
+      if (crlVal && crlVal > 0) {
+        res = calculateFromCrl(crlVal, scanDate, queryDate);
+        resultBadge.textContent = `CRL ${crlVal}mm`;
+      } else if (gsVal && gsVal > 0) {
+        res = calculateFromGs(gsVal, scanDate, queryDate);
+        resultBadge.textContent = `GS ${gsVal}mm`;
+      }
+
+      if (!res) return;
+      currentResult = res;
+
+      resultGaDisplay.textContent = res.gaText;
+      if (resultScanGaDisplay) resultScanGaDisplay.textContent = res.scanGaText;
+      resultEddDisplay.textContent = formatDateChinese(res.edd);
+
+      const week20Date = addDays(res.lmp, 140);
+      if (resultWeek20Display) resultWeek20Display.textContent = formatDateChinese(week20Date);
+      return;
+    }
+
+    // LMP / EDD 模式
+    const inputDate = parseLocalDate(mainDateInput.value);
     if (!inputDate) {
       resultGaDisplay.textContent = '-- 週 + - 天';
       resultBadge.textContent = '--';
       resultEddDisplay.textContent = '-- 年 -- 月 -- 日';
       if (resultWeek20Display) resultWeek20Display.textContent = '-- 年 -- 月 -- 日';
-      if (resultFooterHint) {
-        resultFooterHint.textContent = currentMode === 'lmp' ? '選擇 LMP 日期後顯示結果' : '輸入預產期與查詢日期後顯示結果';
-      }
       currentResult = null;
       return;
     }
@@ -127,29 +209,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // 渲染最下方結果卡片
     resultGaDisplay.textContent = res.gaText;
     resultBadge.textContent = res.trimester;
-    
-    if (currentMode === 'lmp') {
-      resultEddDisplay.textContent = formatDateChinese(res.edd);
-    } else {
-      resultEddDisplay.textContent = formatDateChinese(res.edd);
-    }
+    resultEddDisplay.textContent = formatDateChinese(res.edd);
 
     // 計算滿 20 週 (20W0D = LMP + 140 天) 之精準日期
     const week20Date = addDays(res.lmp, 140);
     if (resultWeek20Display) {
       resultWeek20Display.textContent = formatDateChinese(week20Date);
     }
-
-    if (resultFooterHint) {
-      if (res.daysUntilEdd >= 0) {
-        resultFooterHint.textContent = `距預產期尚餘 ${res.daysUntilEdd} 天`;
-      } else {
-        resultFooterHint.textContent = `已過預產期 ${Math.abs(res.daysUntilEdd)} 天`;
-      }
-    }
   }
-
-
 
   // 首次執行
   updateCalculation();

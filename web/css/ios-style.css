@@ -80,14 +80,15 @@ body {
   flex: 1;
   border: 1.5px solid transparent;
   background: transparent;
-  padding: 8px 4px;
+  padding: 8px 2px;
   border-radius: 9px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: #4C6E86;
   cursor: pointer;
   transition: all 0.15s ease;
   text-align: center;
+  white-space: nowrap;
 }
 
 .mode-nav-btn.active {
@@ -200,6 +201,68 @@ body {
   color: #55778E;
   pointer-events: none;
   margin-left: 6px;
+}
+
+/* 超音波輸入專用樣式 */
+.us-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field-row-two-col {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.col-item {
+  flex: 1;
+  min-width: 0;
+}
+
+.num-input-wrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  background-color: #FFFFFF;
+  border: 1.5px solid var(--input-border);
+  border-radius: 10px;
+  padding: 0 10px;
+  height: 44px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.num-input-wrapper:focus-within {
+  border-color: var(--input-border-active);
+  box-shadow: 0 0 0 2px rgba(20, 115, 171, 0.15);
+}
+
+.custom-num-input {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: transparent;
+  font-size: 16.5px;
+  font-weight: 700;
+  color: var(--text-dark);
+  font-family: inherit;
+  outline: none;
+  -webkit-appearance: none;
+}
+
+.custom-num-input::placeholder {
+  color: #9EB5C7;
+  font-weight: 500;
+}
+
+.num-unit {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-left: 4px;
+  user-select: none;
 }
 
 /* ★ 3. 最下面：深藍色換算結果卡片 */

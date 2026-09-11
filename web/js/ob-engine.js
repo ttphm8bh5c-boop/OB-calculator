@@ -124,6 +124,60 @@ function calculateFromGa(weeks, days, targetDate = new Date(), cycleLength = 28)
 }
 
 /**
+ * 依超音波 CRL (頭臀長, mm) 推算週數與預產期 (Robinson & Fleming 1975 國際黃金標準)
+ * GA (days) = 8.052 * sqrt(CRL * 1.037) + 23.73
+ */
+function calculateFromCrl(crlMm, scanDate = new Date(), targetDate = new Date()) {
+  const crl = parseFloat(crlMm);
+  if (isNaN(crl) || crl <= 0) return null;
+
+  const gaDaysExact = 8.052 * Math.sqrt(crl * 1.037) + 23.73;
+  const gaDaysRounded = Math.round(gaDaysExact);
+  const scanGa = daysToWeeksAndDays(gaDaysRounded);
+
+  const lmp = addDays(scanDate, -gaDaysRounded);
+  const baseResult = calculateFromLmp(lmp, targetDate, 28);
+
+  return {
+    ...baseResult,
+    method: 'crl',
+    crlMm: crl,
+    scanDate,
+    scanGaWeeks: scanGa.weeks,
+    scanGaDays: scanGa.days,
+    scanGaText: `${scanGa.weeks} 週 + ${scanGa.days} 天`,
+    scanGaExactDays: gaDaysExact
+  };
+}
+
+/**
+ * 依超音波 GS (妊娠囊平均直徑, mm) 推算週數與預產期 (Tokyo / Nyberg / Hellman 國際標準)
+ * GA (days) = GS (mm) + 30
+ */
+function calculateFromGs(gsMm, scanDate = new Date(), targetDate = new Date()) {
+  const gs = parseFloat(gsMm);
+  if (isNaN(gs) || gs <= 0) return null;
+
+  const gaDaysExact = gs + 30;
+  const gaDaysRounded = Math.round(gaDaysExact);
+  const scanGa = daysToWeeksAndDays(gaDaysRounded);
+
+  const lmp = addDays(scanDate, -gaDaysRounded);
+  const baseResult = calculateFromLmp(lmp, targetDate, 28);
+
+  return {
+    ...baseResult,
+    method: 'gs',
+    gsMm: gs,
+    scanDate,
+    scanGaWeeks: scanGa.weeks,
+    scanGaDays: scanGa.days,
+    scanGaText: `${scanGa.weeks} 週 + ${scanGa.days} 天`,
+    scanGaExactDays: gaDaysExact
+  };
+}
+
+/**
  * 建議產檢里程碑清單
  */
 function getMilestones(lmp) {
@@ -242,6 +296,8 @@ if (typeof module !== 'undefined' && module.exports) {
     calculateFromLmp,
     calculateFromEdd,
     calculateFromGa,
+    calculateFromCrl,
+    calculateFromGs,
     getMilestones
   };
 }
