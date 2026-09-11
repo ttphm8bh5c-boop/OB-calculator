@@ -98,22 +98,27 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // 2. 清除按鈕
-  btnClear.addEventListener('click', () => {
-    if (currentMode === 'us') {
-      crlInput.value = '';
-      gsInput.value = '';
-      usScanDateInput.value = formatDate(new Date());
-    } else {
-      mainDateInput.value = '';
-    }
+  const btnResetAll = document.getElementById('btnResetAll');
+
+  // 2. 一鍵清空所有欄位與結果
+  function resetAllFields() {
+    mainDateInput.value = '';
+    if (crlInput) crlInput.value = '';
+    if (gsInput) gsInput.value = '';
+    const today = new Date();
+    queryDateInput.value = formatDate(today);
+    if (usScanDateInput) usScanDateInput.value = formatDate(today);
+
     currentResult = null;
     resultGaDisplay.textContent = '-- 週 + - 天';
     resultBadge.textContent = '--';
     resultEddDisplay.textContent = '-- 年 -- 月 -- 日';
     if (resultWeek20Display) resultWeek20Display.textContent = '-- 年 -- 月 -- 日';
     if (resultScanGaDisplay) resultScanGaDisplay.textContent = '-- 週 + - 天';
-  });
+  }
+
+  if (btnClear) btnClear.addEventListener('click', resetAllFields);
+  if (btnResetAll) btnResetAll.addEventListener('click', resetAllFields);
 
   // 3. 查詢日期設為「今天」
   btnSetToday.addEventListener('click', () => {
