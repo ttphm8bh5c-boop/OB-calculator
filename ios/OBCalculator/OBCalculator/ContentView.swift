@@ -1,19 +1,38 @@
 import SwiftUI
 import WebKit
 
-struct WebView: UIViewRepresentable {
+struct ContentView: View {
+    var body: some View {
+        ZStack {
+            Color(red: 0.93, green: 0.95, blue: 0.97) // #EDF2F7 背景畫布
+                .ignoresSafeArea()
+            
+            WebViewContainer()
+                .ignoresSafeArea(.keyboard, edges: .bottom)
+        }
+    }
+}
+
+struct WebViewContainer: UIViewRepresentable {
     func makeUIView(context: Context) -> WKWebView {
-        let config = WKWebViewConfiguration()
+        let preferences = WKWebpagePreferences()
+        preferences.allowsContentJavaScript = true
         
-        // 允許離線載入本機資源
+        let config = WKWebViewConfiguration()
+        config.defaultWebpagePreferences = preferences
+        config.websiteDataStore = WKWebsiteDataStore.nonPersistent()
+        
+        // 允許本地檔案資源載入
         config.preferences.setValue(true, forKey: "allowFileAccessFromFileURLs")
         config.setValue(true, forKey: "allowUniversalAccessFromFileURLs")
         
         let webView = WKWebView(frame: .zero, configuration: config)
         webView.isOpaque = false
-        webView.backgroundColor = .systemBackground
+        webView.backgroundColor = .clear
+        webView.scrollView.backgroundColor = .clear
+        webView.scrollView.bounces = false
+        webView.scrollView.isScrollEnabled = false
         webView.scrollView.contentInsetAdjustmentBehavior = .never
-        webView.scrollView.bounces = true
         
         // 載入 WebResources 目錄內的 index.html
         if let resourcePath = Bundle.main.resourcePath {
@@ -32,14 +51,6 @@ struct WebView: UIViewRepresentable {
     }
 
     func updateUIView(_ uiView: WKWebView, context: Context) {
-        // 不需要動態刷新
-    }
-}
-
-struct ContentView: View {
-    var body: some View {
-        WebView()
-            .ignoresSafeArea()
     }
 }
 
