@@ -151,14 +151,17 @@ function calculateFromCrl(crlMm, scanDate = new Date(), targetDate = new Date())
 }
 
 /**
- * 依超音波 GS (妊娠囊平均直徑, mm) 推算週數與預產期 (Tokyo / Nyberg / Hellman 國際標準)
- * GA (days) = GS (mm) + 30
+ * 依超音波 GS (妊娠囊平均直徑, mm) 推算週數與預產期 (Hellman 經典公式，Toshiba Xario 200 慣用)
+ * GA (weeks) = GS (cm) + 4 = GS (mm) / 10 + 4
+ * 換算天數: GA (days) = (GS / 10 + 4) * 7 = GS * 0.7 + 28
+ * 10mm = 5週0天 (35天), 20mm = 6週0天 (42天), 30mm = 7週0天 (49天)
  */
 function calculateFromGs(gsMm, scanDate = new Date(), targetDate = new Date()) {
   const gs = parseFloat(gsMm);
   if (isNaN(gs) || gs <= 0) return null;
 
-  const gaDaysExact = gs + 30;
+  // Hellman 公式: GA (weeks) = (gs / 10) + 4
+  const gaDaysExact = ((gs / 10) + 4) * 7;
   const gaDaysRounded = Math.round(gaDaysExact);
   const scanGa = daysToWeeksAndDays(gaDaysRounded);
 
