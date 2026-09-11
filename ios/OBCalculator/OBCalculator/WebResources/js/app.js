@@ -96,9 +96,6 @@ document.addEventListener('DOMContentLoaded', () => {
     updateCalculation();
   }
 
-    updateCalculation();
-  }
-
   // 模式按鈕點擊切換
   modeBtns.forEach(btn => {
     btn.addEventListener('click', () => {
