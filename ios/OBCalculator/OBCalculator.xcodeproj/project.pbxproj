@@ -14,12 +14,12 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		0BCA00100000000000000006 /* OBCalculator.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OBCalculator.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0BCA00100000000000000001 /* OBCalculatorApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OBCalculatorApp.swift; sourceTree = "<group>"; };
 		0BCA00100000000000000002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		0BCA00100000000000000003 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0BCA00100000000000000004 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		0BCA00100000000000000005 /* WebResources */ = {isa = PBXFileReference; lastKnownFileType = folder; path = WebResources; sourceTree = "<group>"; };
+		0BCA00100000000000000006 /* OBCalculator.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OBCalculator.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -93,6 +93,8 @@
 				TargetAttributes = {
 					0BCA00020000000000000002 = {
 						CreatedOnToolsVersion = 16.0;
+						DevelopmentTeam = 38VP8LYKGF;
+						ProvisioningStyle = Automatic;
 					};
 				};
 			};
@@ -197,11 +199,12 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "";
-				DEVELOPMENT_TEAM = 38VP8LYKGF;
+				DEVELOPMENT_TEAM = 33KMXYMW7J;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = OBCalculator/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "產科計算機";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.medical";
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -224,11 +227,12 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "";
-				DEVELOPMENT_TEAM = 38VP8LYKGF;
+				DEVELOPMENT_TEAM = 33KMXYMW7J;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = OBCalculator/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "產科計算機";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.medical";
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
