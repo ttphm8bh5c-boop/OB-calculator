@@ -100,11 +100,13 @@
 			};
 			buildConfigurationList = 0BCA00400000000000000001 /* Build configuration list for PBXProject "OBCalculator" */;
 			compatibilityVersion = "Xcode 14.0";
-			developmentRegion = en;
+			developmentRegion = "zh-Hant";
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
 				Base,
+				"zh-Hant",
+				zh_TW,
 			);
 			mainGroup = 0BCA00030000000000000003;
 			productRefGroup = 0BCA00050000000000000005 /* Products */;
