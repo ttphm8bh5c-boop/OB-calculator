@@ -50,53 +50,101 @@ document.addEventListener('DOMContentLoaded', () => {
   const defaultInitialLmp = addDays(today, -56);
   mainDateInput.value = formatDate(defaultInitialLmp);
 
-  // 1. 模式切換邏輯
+  const MODES = ['lmp', 'edd', 'us'];
+
+  // 1. 統一模式切換核心函數
+  function switchMode(mode) {
+    if (!MODES.includes(mode) || mode === currentMode) return;
+    currentMode = mode;
+
+    modeBtns.forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.mode === mode);
+    });
+
+    if (mode === 'lmp') {
+      cardTitle.textContent = '輸入末次月經日期';
+      mainDateFieldGroup.style.display = '';
+      usFieldGroup.style.display = 'none';
+      if (usScanRow) usScanRow.style.display = 'none';
+      mainDateLabel.innerHTML = '末次月經第一天 <span class="field-sub">LMP</span>';
+      resultCardLabel.textContent = '指定日期孕週 (GA)';
+      resultSubLabel.textContent = '預產期 EDD (40W)';
+      if (currentResult && currentResult.lmp) {
+        mainDateInput.value = formatDate(currentResult.lmp);
+      }
+    } else if (mode === 'edd') {
+      cardTitle.textContent = '查詢指定日期孕週';
+      mainDateFieldGroup.style.display = '';
+      usFieldGroup.style.display = 'none';
+      if (usScanRow) usScanRow.style.display = 'none';
+      mainDateLabel.innerHTML = '預產期 <span class="field-sub">EDD / EDC</span>';
+      resultCardLabel.textContent = '指定日期孕週 (GA)';
+      resultSubLabel.textContent = '預產期 EDD (40W)';
+      if (currentResult && currentResult.edd) {
+        mainDateInput.value = formatDate(currentResult.edd);
+      }
+    } else if (mode === 'us') {
+      cardTitle.textContent = '超音波數值推算';
+      mainDateFieldGroup.style.display = 'none';
+      usFieldGroup.style.display = 'flex';
+      if (usScanRow) usScanRow.style.display = 'flex';
+      resultCardLabel.textContent = '查詢日期孕週 (GA)';
+      resultSubLabel.textContent = '推算預產期 (40W)';
+      
+      // 若尚未填寫數值，提供常用示範值 CRL 15mm
+      if (!crlInput.value && !gsInput.value) {
+        crlInput.value = '15.0';
+      }
+    }
+
+    updateCalculation();
+  }
+
+  // 模式按鈕點擊切換
   modeBtns.forEach(btn => {
     btn.addEventListener('click', () => {
-      modeBtns.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      const mode = btn.dataset.mode;
-      currentMode = mode;
-
-      if (mode === 'lmp') {
-        cardTitle.textContent = '輸入末次月經日期';
-        mainDateFieldGroup.style.display = '';
-        usFieldGroup.style.display = 'none';
-        if (usScanRow) usScanRow.style.display = 'none';
-        mainDateLabel.innerHTML = '末次月經第一天 <span class="field-sub">LMP</span>';
-        resultCardLabel.textContent = '指定日期孕週 (GA)';
-        resultSubLabel.textContent = '預產期 EDD (40W)';
-        if (currentResult && currentResult.lmp) {
-          mainDateInput.value = formatDate(currentResult.lmp);
-        }
-      } else if (mode === 'edd') {
-        cardTitle.textContent = '查詢指定日期孕週';
-        mainDateFieldGroup.style.display = '';
-        usFieldGroup.style.display = 'none';
-        if (usScanRow) usScanRow.style.display = 'none';
-        mainDateLabel.innerHTML = '預產期 <span class="field-sub">EDD / EDC</span>';
-        resultCardLabel.textContent = '指定日期孕週 (GA)';
-        resultSubLabel.textContent = '預產期 EDD (40W)';
-        if (currentResult && currentResult.edd) {
-          mainDateInput.value = formatDate(currentResult.edd);
-        }
-      } else if (mode === 'us') {
-        cardTitle.textContent = '超音波數值推算';
-        mainDateFieldGroup.style.display = 'none';
-        usFieldGroup.style.display = 'flex';
-        if (usScanRow) usScanRow.style.display = 'flex';
-        resultCardLabel.textContent = '查詢日期孕週 (GA)';
-        resultSubLabel.textContent = '推算預產期 (40W)';
-        
-        // 若尚未填寫數值，提供常用示範值 CRL 15mm
-        if (!crlInput.value && !gsInput.value) {
-          crlInput.value = '15.0';
-        }
-      }
-
-      updateCalculation();
+      switchMode(btn.dataset.mode);
     });
   });
+
+  // 左右滑動手勢監聽 (Swipe Gestures)
+  let touchStartX = 0;
+  let touchStartY = 0;
+  let touchStartTime = 0;
+
+  document.addEventListener('touchstart', (e) => {
+    if (e.touches.length === 1) {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      touchStartTime = Date.now();
+    }
+  }, { passive: true });
+
+  document.addEventListener('touchend', (e) => {
+    if (e.changedTouches.length === 1) {
+      const touchEndX = e.changedTouches[0].clientX;
+      const touchEndY = e.changedTouches[0].clientY;
+      const deltaX = touchEndX - touchStartX;
+      const deltaY = touchEndY - touchStartY;
+      const duration = Date.now() - touchStartTime;
+
+      // 判定為有效滑動：快速 (<500ms)、位移 > 45px、且水平移動明顯大於垂直移動
+      if (duration < 500 && Math.abs(deltaX) > 45 && Math.abs(deltaX) > Math.abs(deltaY) * 1.4) {
+        const currentIndex = MODES.indexOf(currentMode);
+        if (deltaX < 0) {
+          // 向左滑動 (Swipe Left) -> 切換至右邊下一個模式 (例如 LMP -> EDC -> 超音波)
+          if (currentIndex < MODES.length - 1) {
+            switchMode(MODES[currentIndex + 1]);
+          }
+        } else {
+          // 向右滑動 (Swipe Right) -> 切換至左邊上一個模式 (例如 超音波 -> EDC -> LMP)
+          if (currentIndex > 0) {
+            switchMode(MODES[currentIndex - 1]);
+          }
+        }
+      }
+    }
+  }, { passive: true });
 
   const btnResetAll = document.getElementById('btnResetAll');
 
