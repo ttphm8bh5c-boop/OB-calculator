@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="產科計算機">
+  <meta name="theme-color" content="#EDF2F7">
+  <title>產科計算機</title>
+  <link rel="stylesheet" href="css/ios-style.css">
+</head>
+<body>
+  <div class="app-container">
+    
+    <!-- 頂部標題列 -->
+    <header class="app-header">
+      <h1 class="main-title">產科計算機</h1>
+    </header>
+
+
+    <!-- ★ 1. 最上面：選擇模式分段控制器 -->
+    <nav class="mode-nav-segmented">
+      <button class="mode-nav-btn active" data-mode="lmp">
+        LMP 算預產期
+      </button>
+      <button class="mode-nav-btn" data-mode="edd">
+        預產期查孕週
+      </button>
+    </nav>
+
+    <!-- ★ 2. 中間：輸入卡片 (包含 LMP/EDC 與 查詢日期) -->
+    <main class="input-card">
+      <div class="card-header-row">
+        <h2 id="cardTitle" class="card-header-title">輸入末次月經日期</h2>
+        <button id="btnClear" class="btn-text-action">清除</button>
+      </div>
+
+      <!-- 第二個欄位：輸入 LMP 或 EDC/EDD -->
+      <div class="field-group">
+        <label id="mainDateLabel" class="field-label">末次月經第一天 <span class="field-sub">LMP</span></label>
+        <div class="date-input-wrapper">
+          <input type="date" id="mainDateInput" class="custom-date-input">
+          <span class="date-calendar-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+          </span>
+        </div>
+      </div>
+
+      <!-- 第三個欄位：查詢日期 (預設今天，含快捷按鈕) -->
+      <div class="field-group">
+        <div class="field-label-row">
+          <label class="field-label">查詢日期 <span class="field-sub">Target</span></label>
+          <button id="btnSetToday" class="btn-text-action">今天</button>
+        </div>
+        <div class="date-input-wrapper">
+          <input type="date" id="queryDateInput" class="custom-date-input">
+          <span class="date-calendar-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+          </span>
+        </div>
+      </div>
+    </main>
+
+    <!-- ★ 3. 最下面：深藍色換算結果卡片 -->
+    <section class="result-navy-card">
+      <div class="result-label-row">
+        <span id="resultCardLabel" class="result-top-label">指定日期孕週 (GA)</span>
+        <span id="resultBadge" class="result-pill-badge">--</span>
+      </div>
+
+      <!-- 大字週數換算結果 -->
+      <div id="resultGaDisplay" class="result-main-val">-- 週 + - 天</div>
+
+      <!-- 預產期資訊列 -->
+      <div class="result-sub-row">
+        <span id="resultSubLabel" class="result-sub-label">預產期 EDD (40W)</span>
+        <span id="resultEddDisplay" class="result-sub-val">-- 年 -- 月 -- 日</span>
+      </div>
+
+      <!-- 滿 20 週日期資訊列 (高層次超音波基準) -->
+      <div class="result-sub-row">
+        <span class="result-sub-label">滿 20 週日期 (20W)</span>
+        <span id="resultWeek20Display" class="result-sub-val">-- 年 -- 月 -- 日</span>
+      </div>
+    </section>
+
+
+  </div>
+
+  <!-- 腳本載入 -->
+
+  <script src="js/ob-engine.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

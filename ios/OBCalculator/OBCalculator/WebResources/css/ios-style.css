@@ -1,0 +1,263 @@
+/* ==========================================================================
+   OB Calculator - iPhone 專屬精簡無滾動版面樣式
+   移除所有非必要解說文字，全功能一屏完整呈現
+   ========================================================================== */
+
+:root {
+  --bg-canvas: #EDF2F7;
+  --card-bg: #FFFFFF;
+  --text-dark: #102A3C;
+  --text-muted: #57778E;
+  --primary-blue: #1473AB;
+  --input-border: #CFDCE8;
+  --input-border-active: #1473AB;
+  --navy-card-bg: #0F3249;
+  --navy-card-text: #FFFFFF;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  width: 100%;
+  overflow-x: hidden;
+  background-color: var(--bg-canvas);
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "PingFang TC", "Helvetica Neue", Arial, sans-serif;
+  color: var(--text-dark);
+  line-height: 1.35;
+  -webkit-font-smoothing: antialiased;
+  padding-top: max(env(safe-area-inset-top, 0px), 12px);
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 16px);
+  padding-left: max(env(safe-area-inset-left, 0px), 16px);
+  padding-right: max(env(safe-area-inset-right, 0px), 16px);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.app-container {
+  width: 100%;
+  max-width: 390px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* 頂部標題列 */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 4px 2px 2px 2px;
+}
+
+.main-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-dark);
+  letter-spacing: -0.4px;
+}
+
+/* ★ 1. 選擇模式分段控制器 */
+
+.mode-nav-segmented {
+  display: flex;
+  background-color: #DDE6ED;
+  border-radius: 12px;
+  padding: 3px;
+  gap: 3px;
+}
+
+.mode-nav-btn {
+  flex: 1;
+  border: 1.5px solid transparent;
+  background: transparent;
+  padding: 8px 4px;
+  border-radius: 9px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #4C6E86;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: center;
+}
+
+.mode-nav-btn.active {
+  background-color: #FFFFFF;
+  border-color: #1272AA;
+  color: #0C2B40;
+  font-weight: 700;
+  box-shadow: 0 1px 4px rgba(16, 42, 60, 0.08);
+}
+
+/* ★ 2. 輸入卡片 */
+.input-card {
+  background-color: var(--card-bg);
+  border-radius: 14px;
+  padding: 12px 14px;
+  box-shadow: 0 2px 8px rgba(16, 42, 60, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.card-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-header-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.btn-text-action {
+  background: transparent;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1473AB;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+
+.btn-text-action:active {
+  opacity: 0.6;
+}
+
+/* 欄位群組 */
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.field-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.field-label {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.field-sub {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6C8A9E;
+  margin-left: 2px;
+}
+
+.date-input-wrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  background-color: #FFFFFF;
+  border: 1.5px solid var(--input-border);
+  border-radius: 10px;
+  padding: 0 12px;
+  height: 44px;
+  transition: border-color 0.15s;
+}
+
+.date-input-wrapper:focus-within {
+  border-color: var(--input-border-active);
+  box-shadow: 0 0 0 2px rgba(20, 115, 171, 0.15);
+}
+
+.custom-date-input {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: transparent;
+  font-size: 16.5px;
+  font-weight: 700;
+  color: var(--text-dark);
+  font-family: inherit;
+  outline: none;
+  cursor: pointer;
+  -webkit-appearance: none;
+}
+
+.date-calendar-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #55778E;
+  pointer-events: none;
+  margin-left: 6px;
+}
+
+/* ★ 3. 最下面：深藍色換算結果卡片 */
+.result-navy-card {
+  background-color: var(--navy-card-bg);
+  color: var(--navy-card-text);
+  border-radius: 14px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-shadow: 0 4px 14px rgba(15, 50, 73, 0.16);
+}
+
+.result-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.result-top-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.result-pill-badge {
+  background: rgba(255, 255, 255, 0.18);
+  padding: 1px 7px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.result-main-val {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.4px;
+  line-height: 1.15;
+  margin: 1px 0;
+}
+
+.result-sub-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-top: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.result-sub-label {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.result-sub-val {
+  font-size: 14px;
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
