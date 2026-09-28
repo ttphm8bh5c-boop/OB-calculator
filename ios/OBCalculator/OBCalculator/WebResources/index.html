@@ -8,6 +8,7 @@
   <meta name="apple-mobile-web-app-title" content="產科計算機">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="icon" type="image/png" href="apple-touch-icon.png">
+  <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#EDF2F7">
   <title>產科計算機</title>
   <link rel="stylesheet" href="css/ios-style.css">
@@ -187,5 +188,15 @@
 
   <script src="js/ob-engine.js"></script>
   <script src="js/app.js"></script>
+  <script>
+    // PWA Service Worker 註冊 (支援離線秒開與斷網執行)
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then((reg) => console.log('PWA ServiceWorker ready, scope:', reg.scope))
+          .catch((err) => console.error('PWA ServiceWorker error:', err));
+      });
+    }
+  </script>
 </body>
 </html>
