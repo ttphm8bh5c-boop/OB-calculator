@@ -22,10 +22,6 @@ struct WebViewContainer: UIViewRepresentable {
         config.defaultWebpagePreferences = preferences
         config.websiteDataStore = WKWebsiteDataStore.nonPersistent()
         
-        // 允許本地檔案資源載入
-        config.preferences.setValue(true, forKey: "allowFileAccessFromFileURLs")
-        config.setValue(true, forKey: "allowUniversalAccessFromFileURLs")
-        
         let webView = WKWebView(frame: .zero, configuration: config)
         webView.isOpaque = false
         webView.backgroundColor = .clear

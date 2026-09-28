@@ -93,7 +93,7 @@
 				TargetAttributes = {
 					0BCA00020000000000000002 = {
 						CreatedOnToolsVersion = 16.0;
-						DevelopmentTeam = 38VP8LYKGF;
+						DevelopmentTeam = 33KMXYMW7J;
 						ProvisioningStyle = Automatic;
 					};
 				};
