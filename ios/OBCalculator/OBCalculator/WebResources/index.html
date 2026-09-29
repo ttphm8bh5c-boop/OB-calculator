@@ -16,79 +16,99 @@
 <body>
   <div class="app-container">
     
-    <!-- 頂部標題列 -->
-    <header class="app-header">
-      <h1 class="main-title">產科計算機</h1>
-    </header>
+    <!-- ★ 左側欄：孕週日期換算表 (Duo 開蓋雙螢幕時自然呈現，合蓋時平順收合) -->
+    <aside class="duo-schedule-pane" id="duoSchedulePane" aria-label="孕週日期換算表">
+      <div class="schedule-card">
+        <div class="schedule-header">
+          <div class="schedule-title-row">
+            <h2 class="schedule-title">孕週日期換算表</h2>
+            <span class="schedule-mode-tag" id="scheduleModeTag">關鍵時程</span>
+          </div>
+          <div class="schedule-current-banner" id="scheduleCurrentBanner">
+            <div class="banner-text-group">
+              <span class="schedule-banner-label">目前孕週</span>
+              <span class="schedule-banner-val" id="scheduleGaValue">-- 週 + - 天</span>
+            </div>
+            <span class="schedule-banner-date" id="scheduleQueryDateDisplay"></span>
+          </div>
+        </div>
 
+        <!-- 空狀態 (未輸入末次月經/預產期時顯示) -->
+        <div class="schedule-empty-state" id="scheduleEmptyState" style="display: none;">
+          <div class="empty-icon-wrap">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+              <circle cx="12" cy="15" r="2"></circle>
+            </svg>
+          </div>
+          <p class="empty-title">請在右側輸入日期</p>
+          <p class="empty-desc">輸入末次月經或預產期後，將自動排定各週產檢節點</p>
+        </div>
 
-    <!-- ★ 1. 最上面：選擇模式分段控制器 -->
-    <nav class="mode-nav-segmented">
-      <button class="mode-nav-btn active" data-mode="lmp">
-        LMP 算預產期
-      </button>
-      <button class="mode-nav-btn" data-mode="edd">
-        預產期查孕週
-      </button>
-      <button class="mode-nav-btn" data-mode="us">
-        超音波推算
-      </button>
-    </nav>
+        <!-- 孕週換算表格 (12, 16, 20, 24, 28, 32, 36, 40 週) -->
+        <div class="schedule-table-wrap" id="scheduleTableWrap">
+          <table class="milestone-table">
+            <thead>
+              <tr>
+                <th class="th-week">孕週</th>
+                <th class="th-date">換算日期</th>
+                <th class="th-focus">產檢與衛教重點</th>
+              </tr>
+            </thead>
+            <tbody id="milestoneTableBody">
+              <!-- 由 JavaScript 動態即時渲染 -->
+            </tbody>
+          </table>
+        </div>
 
-    <!-- ★ 2. 中間：輸入卡片 (含水平全幅滑移軌道) -->
-    <main class="input-card">
-      <div class="card-header-row">
-        <h2 id="cardTitle" class="card-header-title">輸入末次月經日期</h2>
-        <button id="btnClear" class="btn-text-action">清除</button>
+        <div class="schedule-footer-hint" id="scheduleFooterHint">
+          <span class="hint-bullet">●</span>
+          <span class="hint-text">標記列為與查詢日最接近之產檢節點，供衛教快速定位</span>
+        </div>
       </div>
+    </aside>
 
-      <!-- 全幅滑移視窗 (Slider Viewport) -->
-      <div class="card-slider-viewport">
-        <div id="sliderTrack" class="card-slider-track">
-          
-          <!-- 面板 1: LMP 模式 -->
-          <div class="card-slide-panel" data-panel="lmp">
-            <div class="field-group">
-              <label class="field-label">末次月經第一天 <span class="field-sub">LMP</span></label>
-              <div class="date-input-wrapper">
-                <input type="date" id="lmpDateInput" class="custom-date-input">
-                <span class="date-calendar-icon">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                    <line x1="16" y1="2" x2="16" y2="6"></line>
-                    <line x1="8" y1="2" x2="8" y2="6"></line>
-                    <line x1="3" y1="10" x2="21" y2="10"></line>
-                  </svg>
-                </span>
-              </div>
-            </div>
-          </div>
+    <!-- ★ 右側欄：計算機本體 (合蓋為單畫面置中，開蓋時平順移至右側) -->
+    <main class="duo-calculator-pane" id="duoCalculatorPane">
+      
+      <!-- 頂部標題列 -->
+      <header class="app-header">
+        <h1 class="main-title">產科計算機</h1>
+      </header>
 
-          <!-- 面板 2: EDD 模式 -->
-          <div class="card-slide-panel" data-panel="edd">
-            <div class="field-group">
-              <label class="field-label">預產期 <span class="field-sub">EDD / EDC</span></label>
-              <div class="date-input-wrapper">
-                <input type="date" id="eddDateInput" class="custom-date-input">
-                <span class="date-calendar-icon">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                    <line x1="16" y1="2" x2="16" y2="6"></line>
-                    <line x1="8" y1="2" x2="8" y2="6"></line>
-                    <line x1="3" y1="10" x2="21" y2="10"></line>
-                  </svg>
-                </span>
-              </div>
-            </div>
-          </div>
+      <!-- 1. 選擇模式分段控制器 -->
+      <nav class="mode-nav-segmented">
+        <button class="mode-nav-btn active" data-mode="lmp">
+          LMP 算預產期
+        </button>
+        <button class="mode-nav-btn" data-mode="edd">
+          預產期查孕週
+        </button>
+        <button class="mode-nav-btn" data-mode="us">
+          超音波推算
+        </button>
+      </nav>
 
-          <!-- 面板 3: 超音波模式 -->
-          <div class="card-slide-panel" data-panel="us">
-            <div class="us-field-group">
+      <!-- 2. 輸入卡片 (含水平全幅滑移軌道) -->
+      <section class="input-card">
+        <div class="card-header-row">
+          <h2 id="cardTitle" class="card-header-title">輸入末次月經日期</h2>
+          <button id="btnClear" class="btn-text-action">清除</button>
+        </div>
+
+        <!-- 全幅滑移視窗 (Slider Viewport) -->
+        <div class="card-slider-viewport">
+          <div id="sliderTrack" class="card-slider-track">
+            
+            <!-- 面板 1: LMP 模式 -->
+            <div class="card-slide-panel" data-panel="lmp">
               <div class="field-group">
-                <label class="field-label">超音波檢查日 <span class="field-sub">Scan Date</span></label>
+                <label class="field-label">末次月經第一天 <span class="field-sub">LMP</span></label>
                 <div class="date-input-wrapper">
-                  <input type="date" id="usScanDateInput" class="custom-date-input">
+                  <input type="date" id="lmpDateInput" class="custom-date-input">
                   <span class="date-calendar-icon">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -99,93 +119,131 @@
                   </span>
                 </div>
               </div>
-              <div class="field-row-two-col">
-                <div class="field-group col-item">
-                  <label class="field-label">CRL <span class="field-sub">頭臀長</span></label>
-                  <div class="num-input-wrapper">
-                    <input type="number" id="crlInput" class="custom-num-input" placeholder="例如 15" step="0.1" min="1" max="100">
-                    <span class="num-unit">mm</span>
+            </div>
+
+            <!-- 面板 2: EDD 模式 -->
+            <div class="card-slide-panel" data-panel="edd">
+              <div class="field-group">
+                <label class="field-label">預產期 <span class="field-sub">EDD / EDC</span></label>
+                <div class="date-input-wrapper">
+                  <input type="date" id="eddDateInput" class="custom-date-input">
+                  <span class="date-calendar-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                      <line x1="16" y1="2" x2="16" y2="6"></line>
+                      <line x1="8" y1="2" x2="8" y2="6"></line>
+                      <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 面板 3: 超音波模式 -->
+            <div class="card-slide-panel" data-panel="us">
+              <div class="us-field-group">
+                <div class="field-group">
+                  <label class="field-label">超音波檢查日 <span class="field-sub">Scan Date</span></label>
+                  <div class="date-input-wrapper">
+                    <input type="date" id="usScanDateInput" class="custom-date-input">
+                    <span class="date-calendar-icon">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                      </svg>
+                    </span>
                   </div>
                 </div>
-                <div class="field-group col-item">
-                  <label class="field-label">GS <span class="field-sub">妊娠囊</span></label>
-                  <div class="num-input-wrapper">
-                    <input type="number" id="gsInput" class="custom-num-input" placeholder="例如 20" step="0.1" min="1" max="100">
-                    <span class="num-unit">mm</span>
+                <div class="field-row-two-col">
+                  <div class="field-group col-item">
+                    <label class="field-label">CRL <span class="field-sub">頭臀長</span></label>
+                    <div class="num-input-wrapper">
+                      <input type="number" id="crlInput" class="custom-num-input" placeholder="例如 15" step="0.1" min="1" max="100">
+                      <span class="num-unit">mm</span>
+                    </div>
+                  </div>
+                  <div class="field-group col-item">
+                    <label class="field-label">GS <span class="field-sub">妊娠囊</span></label>
+                    <div class="num-input-wrapper">
+                      <input type="number" id="gsInput" class="custom-num-input" placeholder="例如 20" step="0.1" min="1" max="100">
+                      <span class="num-unit">mm</span>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
+
           </div>
+        </div>
 
+        <!-- 查詢日期 (預設今天，含快捷按鈕) -->
+        <div class="field-group">
+          <div class="field-label-row">
+            <label class="field-label">查詢日期 <span class="field-sub">Target</span></label>
+            <button id="btnSetToday" class="btn-text-action">今天</button>
+          </div>
+          <div class="date-input-wrapper">
+            <input type="date" id="queryDateInput" class="custom-date-input">
+            <span class="date-calendar-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+            </span>
+          </div>
         </div>
-      </div>
+      </section>
 
-      <!-- 查詢日期 (預設今天，含快捷按鈕) -->
-      <div class="field-group">
-        <div class="field-label-row">
-          <label class="field-label">查詢日期 <span class="field-sub">Target</span></label>
-          <button id="btnSetToday" class="btn-text-action">今天</button>
+      <!-- 3. 深藍色換算結果卡片 -->
+      <section class="result-navy-card">
+        <div class="result-label-row">
+          <span id="resultCardLabel" class="result-top-label">指定日期孕週 (GA)</span>
+          <span id="resultBadge" class="result-pill-badge">--</span>
         </div>
-        <div class="date-input-wrapper">
-          <input type="date" id="queryDateInput" class="custom-date-input">
-          <span class="date-calendar-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-              <line x1="16" y1="2" x2="16" y2="6"></line>
-              <line x1="8" y1="2" x2="8" y2="6"></line>
-              <line x1="3" y1="10" x2="21" y2="10"></line>
-            </svg>
-          </span>
+
+        <!-- 大字週數換算結果 -->
+        <div id="resultGaDisplay" class="result-main-val">-- 週 + - 天</div>
+
+        <!-- 超音波當日週數 (僅超音波模式顯示) -->
+        <div id="usScanRow" class="result-sub-row" style="display: none;">
+          <span class="result-sub-label">檢查當日週數</span>
+          <span id="resultScanGaDisplay" class="result-sub-val">-- 週 + - 天</span>
         </div>
-      </div>
+
+        <!-- 預產期資訊列 -->
+        <div class="result-sub-row">
+          <span id="resultSubLabel" class="result-sub-label">預產期 EDD (40W)</span>
+          <span id="resultEddDisplay" class="result-sub-val">-- 年 -- 月 -- 日</span>
+        </div>
+
+        <!-- 滿 20 週日期資訊列 (高層次超音波基準) -->
+        <div class="result-sub-row">
+          <span class="result-sub-label">滿 20 週日期 (20W)</span>
+          <span id="resultWeek20Display" class="result-sub-val">-- 年 -- 月 -- 日</span>
+        </div>
+      </section>
+
+      <!-- 4. UI 最下面：紅色清除按鈕 -->
+      <button id="btnResetAll" class="btn-danger-reset">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 6h18"></path>
+          <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+          <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+          <line x1="10" y1="11" x2="10" y2="17"></line>
+          <line x1="14" y1="11" x2="14" y2="17"></line>
+        </svg>
+        清除
+      </button>
+
     </main>
-
-    <!-- ★ 3. 最下面：深藍色換算結果卡片 -->
-    <section class="result-navy-card">
-      <div class="result-label-row">
-        <span id="resultCardLabel" class="result-top-label">指定日期孕週 (GA)</span>
-        <span id="resultBadge" class="result-pill-badge">--</span>
-      </div>
-
-      <!-- 大字週數換算結果 -->
-      <div id="resultGaDisplay" class="result-main-val">-- 週 + - 天</div>
-
-      <!-- 超音波當日週數 (僅超音波模式顯示) -->
-      <div id="usScanRow" class="result-sub-row" style="display: none;">
-        <span class="result-sub-label">檢查當日週數</span>
-        <span id="resultScanGaDisplay" class="result-sub-val">-- 週 + - 天</span>
-      </div>
-
-      <!-- 預產期資訊列 -->
-      <div class="result-sub-row">
-        <span id="resultSubLabel" class="result-sub-label">預產期 EDD (40W)</span>
-        <span id="resultEddDisplay" class="result-sub-val">-- 年 -- 月 -- 日</span>
-      </div>
-
-      <!-- 滿 20 週日期資訊列 (高層次超音波基準) -->
-      <div class="result-sub-row">
-        <span class="result-sub-label">滿 20 週日期 (20W)</span>
-        <span id="resultWeek20Display" class="result-sub-val">-- 年 -- 月 -- 日</span>
-      </div>
-    </section>
-
-    <!-- ★ 4. UI 最下面：紅色清除按鈕 -->
-    <button id="btnResetAll" class="btn-danger-reset">
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M3 6h18"></path>
-        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
-        <line x1="10" y1="11" x2="10" y2="17"></line>
-        <line x1="14" y1="11" x2="14" y2="17"></line>
-      </svg>
-      清除
-    </button>
 
   </div>
 
   <!-- 腳本載入 -->
-
   <script src="js/ob-engine.js"></script>
   <script src="js/app.js"></script>
   <script>

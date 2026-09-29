@@ -1,6 +1,6 @@
 /* ==========================================================================
    OB Calculator - iPhone 專屬精簡無滾動版面樣式
-   移除所有非必要解說文字，全功能一屏完整呈現
+   iPhone Duo 雙螢幕摺疊適配 (合蓋單屏 / 開蓋雙屏左右分欄)
    ========================================================================== */
 
 :root {
@@ -9,10 +9,13 @@
   --text-dark: #102A3C;
   --text-muted: #57778E;
   --primary-blue: #1473AB;
+  --primary-light: #EBF5FB;
   --input-border: #CFDCE8;
   --input-border-active: #1473AB;
   --navy-card-bg: #0F3249;
   --navy-card-text: #FFFFFF;
+  --danger-red: #EF4444;
+  --danger-red-hover: #DC2626;
 }
 
 * {
@@ -43,9 +46,25 @@ body {
   align-items: center;
 }
 
+/* ==========================================================================
+   合蓋時 / 單畫面計算機 (預設版面: 適合快速輸入與查詢，零滾動)
+   ========================================================================== */
+
 .app-container {
   width: 100%;
   max-width: 390px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* 合蓋或小螢幕時：換算表隱藏 */
+.duo-schedule-pane {
+  display: none !important;
+}
+
+.duo-calculator-pane {
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -66,8 +85,7 @@ body {
   letter-spacing: -0.4px;
 }
 
-/* ★ 1. 選擇模式分段控制器 */
-
+/* 1. 選擇模式分段控制器 */
 .mode-nav-segmented {
   display: flex;
   background-color: #DDE6ED;
@@ -99,7 +117,7 @@ body {
   box-shadow: 0 1px 4px rgba(16, 42, 60, 0.08);
 }
 
-/* ★ 2. 輸入卡片 */
+/* 2. 輸入卡片 */
 .input-card {
   background-color: var(--card-bg);
   border-radius: 14px;
@@ -127,7 +145,7 @@ body {
   border: none;
   font-size: 13px;
   font-weight: 600;
-  color: #1473AB;
+  color: var(--primary-blue);
   cursor: pointer;
   padding: 2px 4px;
 }
@@ -288,7 +306,7 @@ body {
   user-select: none;
 }
 
-/* ★ 3. 最下面：深藍色換算結果卡片 */
+/* 3. 最下面：深藍色換算結果卡片 */
 .result-navy-card {
   background-color: var(--navy-card-bg);
   color: var(--navy-card-text);
@@ -347,11 +365,11 @@ body {
   color: #FFFFFF;
 }
 
-/* ★ 4. UI 最下面：紅色一鍵清空按鈕 */
+/* 4. UI 最下面：紅色一鍵清空按鈕 */
 .btn-danger-reset {
   width: 100%;
   height: 42px;
-  background-color: #EF4444;
+  background-color: var(--danger-red);
   color: #FFFFFF;
   border: none;
   border-radius: 12px;
@@ -369,24 +387,67 @@ body {
 }
 
 .btn-danger-reset:active {
-  background-color: #DC2626;
+  background-color: var(--danger-red-hover);
   transform: scale(0.98);
   box-shadow: 0 1px 4px rgba(220, 38, 38, 0.2);
 }
 
-/* ★ 5. iOS 原生平滑換頁動畫 (Horizontal Slide Transition) */
-.slide-in-from-right {
-  animation: iosSlideInRight 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+/* ==========================================================================
+   ★ iPhone Duo / 雙螢幕開蓋與寬螢幕左右分欄 (Dual-Screen Adaptive)
+   左側：孕週日期換算表 | 右側：計算機本體 (流暢開合過渡，避免硬編碼尺寸)
+   ========================================================================== */
+
+@media (min-width: 520px) {
+  body {
+    padding-top: max(env(safe-area-inset-top, 0px), 12px);
+    padding-bottom: max(env(safe-area-inset-bottom, 0px), 24px);
+    padding-left: max(env(safe-area-inset-left, 0px), 16px);
+    padding-right: max(env(safe-area-inset-right, 0px), 16px);
+    justify-content: center;
+  }
+
+  .app-container {
+    max-width: 920px;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: center;
+    gap: 24px; /* 避開 iPhone Duo 物理中軸折痕 (Hinge Safe Margin) */
+  }
+
+  /* 左側欄：孕週日期換算表 */
+  .duo-schedule-pane {
+    display: flex !important;
+    flex-direction: column;
+    flex: 1 1 270px;
+    max-width: 480px;
+    min-width: 250px;
+    animation: duoSlideInLeft 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  /* 右側欄：計算機本體平順移至右側 */
+  .duo-calculator-pane {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 280px;
+    max-width: 430px;
+    min-width: 260px;
+    gap: 8px;
+    animation: duoShiftRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
 }
 
-.slide-in-from-left {
-  animation: iosSlideInLeft 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+@media (min-width: 768px) {
+  .app-container {
+    gap: 36px;
+  }
 }
 
-@keyframes iosSlideInRight {
+/* 開合自然平順動畫 */
+@keyframes duoSlideInLeft {
   0% {
-    opacity: 0.45;
-    transform: translate3d(24px, 0, 0);
+    opacity: 0;
+    transform: translate3d(-18px, 0, 0);
   }
   100% {
     opacity: 1;
@@ -394,10 +455,10 @@ body {
   }
 }
 
-@keyframes iosSlideInLeft {
+@keyframes duoShiftRight {
   0% {
-    opacity: 0.45;
-    transform: translate3d(-24px, 0, 0);
+    opacity: 0.9;
+    transform: translate3d(18px, 0, 0);
   }
   100% {
     opacity: 1;
@@ -405,3 +466,260 @@ body {
   }
 }
 
+/* 減少動態效果 (Accessibility: Prefers-Reduced-Motion) */
+@media (prefers-reduced-motion: reduce) {
+  .duo-schedule-pane,
+  .duo-calculator-pane,
+  .card-slider-track {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+}
+
+/* ==========================================================================
+   ★ 左側「孕週日期換算表」專屬組件樣式 (適合左螢幕閱讀，專注衛教定位)
+   ========================================================================== */
+
+.schedule-card {
+  background-color: var(--card-bg);
+  border-radius: 14px;
+  padding: 12px 14px;
+  box-shadow: 0 2px 8px rgba(16, 42, 60, 0.04);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: space-between;
+  box-sizing: border-box;
+}
+
+.schedule-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #E6EDF3;
+}
+
+.schedule-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.schedule-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-dark);
+  letter-spacing: -0.2px;
+}
+
+.schedule-mode-tag {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--primary-blue);
+  background-color: var(--primary-light);
+  padding: 2px 7px;
+  border-radius: 6px;
+}
+
+/* 目前孕週即時 Banner */
+.schedule-current-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #F0F7FC;
+  border: 1px solid #D2E7F5;
+  border-radius: 8px;
+  padding: 5px 9px;
+}
+
+.banner-text-group {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.schedule-banner-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--primary-blue);
+}
+
+.schedule-banner-val {
+  font-size: 14.5px;
+  font-weight: 800;
+  color: var(--navy-card-bg);
+  letter-spacing: -0.2px;
+}
+
+.schedule-banner-date {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+/* 換算表格排版 */
+.schedule-table-wrap {
+  flex: 1;
+  margin-top: 4px;
+}
+
+.milestone-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.milestone-table th {
+  font-size: 11px;
+  font-weight: 700;
+  color: #6C8A9E;
+  padding: 5px 4px 6px 4px;
+  border-bottom: 1.5px solid #DDE6ED;
+  letter-spacing: 0.2px;
+}
+
+.milestone-table td {
+  padding: 6px 4px;
+  border-bottom: 1px solid #EEF3F7;
+  vertical-align: middle;
+  line-height: 1.25;
+}
+
+.th-week, .td-week {
+  width: 28%;
+}
+
+.th-date, .td-date {
+  width: 34%;
+  font-size: 12px;
+  font-weight: 600;
+  color: #1A365D;
+  white-space: nowrap;
+}
+
+.th-focus, .td-focus {
+  width: 38%;
+  font-size: 11.5px;
+  color: #4A5568;
+}
+
+.week-cell-content {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.week-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+/* 與當前孕週相同或最接近之週數節點高亮提示 (方便衛教快速定位) */
+.milestone-row.is-closest {
+  background-color: #EBF5FB;
+  border-radius: 6px;
+}
+
+.milestone-row.is-closest td {
+  border-bottom-color: #D3E8F7;
+}
+
+.milestone-row.is-closest .week-title {
+  color: var(--primary-blue);
+  font-weight: 800;
+}
+
+.milestone-row.is-closest .td-date {
+  color: #0B3B5B;
+  font-weight: 700;
+}
+
+.milestone-row.is-closest .td-focus {
+  color: #0C2B40;
+  font-weight: 600;
+}
+
+.closest-badge {
+  background-color: var(--primary-blue);
+  color: #FFFFFF;
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 4px;
+  letter-spacing: -0.2px;
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(20, 115, 171, 0.25);
+}
+
+/* 空狀態提示卡 */
+.schedule-empty-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 14px;
+  text-align: center;
+}
+
+.empty-icon-wrap {
+  width: 52px;
+  height: 52px;
+  border-radius: 26px;
+  background-color: #F0F4F8;
+  color: #6C8A9E;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.empty-title {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 3px;
+}
+
+.empty-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.4;
+  max-width: 240px;
+}
+
+/* 換算表底部提示 */
+.schedule-footer-hint {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 5px;
+  padding-top: 5px;
+  border-top: 1px dashed #E2E8F0;
+  font-size: 10px;
+  color: #6C8A9E;
+}
+
+.hint-bullet {
+  color: var(--primary-blue);
+  font-size: 10px;
+}
+
+/* 摺疊設備折痕硬體環境變數相容 (Apple Hinge Crease Sensor) */
+@media (horizontal-viewport-segments: 2) {
+  .app-container {
+    gap: env(viewport-segment-width 0 0, 40px);
+  }
+}
+
+/* 半折立架姿態 (Tabletop / Flex Posture: ~90° Hinge) */
+@media (vertical-viewport-segments: 2) {
+  .app-container {
+    display: flex;
+    flex-direction: column;
+    gap: env(viewport-segment-height 0 0, 24px);
+  }
+}

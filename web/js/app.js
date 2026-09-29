@@ -5,6 +5,7 @@
  * 2. 第二欄位：輸入 LMP / EDC 或 超音波檢查日 + CRL / GS
  * 3. 第三欄位：查詢日期 (預設今天)
  * 4. 最下面：換算的週數 (指定日期孕週) 與預產期、滿20週日
+ * 5. iPhone Duo 雙屏適配：開蓋時左側呈現「孕週日期換算表」，右側為計算機本體
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -38,6 +39,28 @@ document.addEventListener('DOMContentLoaded', () => {
   const resultWeek20Display = document.getElementById('resultWeek20Display');
   const usScanRow = document.getElementById('usScanRow');
   const resultScanGaDisplay = document.getElementById('resultScanGaDisplay');
+  const btnResetAll = document.getElementById('btnResetAll');
+
+  // Duo 雙屏左側換算表元件
+  const duoSchedulePane = document.getElementById('duoSchedulePane');
+  const scheduleEmptyState = document.getElementById('scheduleEmptyState');
+  const scheduleTableWrap = document.getElementById('scheduleTableWrap');
+  const scheduleCurrentBanner = document.getElementById('scheduleCurrentBanner');
+  const scheduleGaValue = document.getElementById('scheduleGaValue');
+  const scheduleQueryDateDisplay = document.getElementById('scheduleQueryDateDisplay');
+  const milestoneTableBody = document.getElementById('milestoneTableBody');
+
+  // 臨床產檢里程碑週數節點 (12, 16, 20, 24, 28, 32, 36, 40 週)
+  const MILESTONE_NODES = [
+    { week: 12, label: '12 週', focus: '第一孕期篩檢 / 頸部透明帶 (NT)' },
+    { week: 16, label: '16 週', focus: '羊膜穿刺 / 母血唐氏症篩檢' },
+    { week: 20, label: '20 週', focus: '高層次超音波檢查 (Level II)' },
+    { week: 24, label: '24 週', focus: '妊娠糖尿病 (OGTT) 篩檢' },
+    { week: 28, label: '28 週', focus: '常規產檢 / 百日咳疫苗 (Tdap)' },
+    { week: 32, label: '32 週', focus: '胎兒生長監測 / 胎位檢查' },
+    { week: 36, label: '36 週', focus: '乙型鏈球菌 (GBS) 篩檢' },
+    { week: 40, label: '40 週', focus: '預產期 (EDD 滿 40 週)' }
+  ];
 
   let currentMode = 'lmp'; // 'lmp' | 'edd' | 'us'
   let currentResult = null;
@@ -47,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
   queryDateInput.value = formatDate(today);
   if (usScanDateInput) usScanDateInput.value = formatDate(today);
 
-  // 預設 LMP 為 8 週前 (讓醫師一開畫面即可看見示範)
+  // 預設 LMP 為 8 週前 (讓醫師一開畫面即可看見示範與完整換算表)
   const defaultInitialLmp = addDays(today, -56);
   if (lmpDateInput) lmpDateInput.value = formatDate(defaultInitialLmp);
 
@@ -137,9 +160,78 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }, { passive: true });
 
-  const btnResetAll = document.getElementById('btnResetAll');
+  // 2. 孕週日期換算表渲染函數 (即時依 LMP 推算 12~40 週並標示最接近節點)
+  function renderMilestoneTable(res) {
+    if (!milestoneTableBody) return;
 
-  // 2. 一鍵清空所有欄位與結果
+    if (!res || !res.lmp) {
+      if (scheduleEmptyState) scheduleEmptyState.style.display = 'flex';
+      if (scheduleTableWrap) scheduleTableWrap.style.display = 'none';
+      if (scheduleCurrentBanner) scheduleCurrentBanner.style.display = 'none';
+      milestoneTableBody.innerHTML = '';
+      return;
+    }
+
+    if (scheduleEmptyState) scheduleEmptyState.style.display = 'none';
+    if (scheduleTableWrap) scheduleTableWrap.style.display = 'block';
+    if (scheduleCurrentBanner) {
+      scheduleCurrentBanner.style.display = 'flex';
+      if (scheduleGaValue) scheduleGaValue.textContent = res.gaText;
+      if (scheduleQueryDateDisplay && res.targetDate) {
+        scheduleQueryDateDisplay.textContent = `查詢日: ${formatDate(res.targetDate)}`;
+      }
+    }
+
+    // 計算目前孕週總週數 (如 18週+3天 = 18.43週)
+    const currentTotalWeeks = (res.gaWeeks !== undefined) ? (res.gaWeeks + (res.gaDays || 0) / 7) : null;
+    let closestIndex = -1;
+    let minDiff = Infinity;
+
+    if (currentTotalWeeks !== null && currentTotalWeeks >= 0) {
+      MILESTONE_NODES.forEach((node, idx) => {
+        const diff = Math.abs(node.week - currentTotalWeeks);
+        if (diff < minDiff) {
+          minDiff = diff;
+          closestIndex = idx;
+        }
+      });
+    }
+
+    const daysOfWeek = ['日', '一', '二', '三', '四', '五', '六'];
+
+    const rowsHtml = MILESTONE_NODES.map((node, idx) => {
+      const nodeDate = addDays(res.lmp, node.week * 7);
+      const y = nodeDate.getFullYear();
+      const m = String(nodeDate.getMonth() + 1).padStart(2, '0');
+      const d = String(nodeDate.getDate()).padStart(2, '0');
+      const dayName = daysOfWeek[nodeDate.getDay()];
+      const dateFormatted = `${y}/${m}/${d} (${dayName})`;
+
+      const isClosest = (idx === closestIndex);
+      const rowClass = isClosest ? 'milestone-row is-closest' : 'milestone-row';
+
+      const isCurrentWeekRange = currentTotalWeeks !== null && Math.abs(node.week - currentTotalWeeks) < 0.6;
+      const badgeLabel = isCurrentWeekRange ? '目前進度' : '最接近';
+      const badgeHtml = isClosest ? `<span class="closest-badge">${badgeLabel}</span>` : '';
+
+      return `
+        <tr class="${rowClass}">
+          <td class="td-week">
+            <div class="week-cell-content">
+              <span class="week-title">${node.label}</span>
+              ${badgeHtml}
+            </div>
+          </td>
+          <td class="td-date">${dateFormatted}</td>
+          <td class="td-focus">${node.focus}</td>
+        </tr>
+      `;
+    }).join('');
+
+    milestoneTableBody.innerHTML = rowsHtml;
+  }
+
+  // 3. 一鍵清空所有欄位與結果
   function resetAllFields() {
     if (lmpDateInput) lmpDateInput.value = '';
     if (eddDateInput) eddDateInput.value = '';
@@ -155,18 +247,21 @@ document.addEventListener('DOMContentLoaded', () => {
     resultEddDisplay.textContent = '-- 年 -- 月 -- 日';
     if (resultWeek20Display) resultWeek20Display.textContent = '-- 年 -- 月 -- 日';
     if (resultScanGaDisplay) resultScanGaDisplay.textContent = '-- 週 + - 天';
+
+    // 換算表重設回空狀態
+    renderMilestoneTable(null);
   }
 
   if (btnClear) btnClear.addEventListener('click', resetAllFields);
   if (btnResetAll) btnResetAll.addEventListener('click', resetAllFields);
 
-  // 3. 查詢日期設為「今天」
+  // 4. 查詢日期設為「今天」
   btnSetToday.addEventListener('click', () => {
     queryDateInput.value = formatDate(new Date());
     updateCalculation();
   });
 
-  // 4. 輸入變更監聽
+  // 5. 輸入變更監聽
   if (lmpDateInput) {
     lmpDateInput.addEventListener('change', updateCalculation);
     lmpDateInput.addEventListener('input', updateCalculation);
@@ -190,7 +285,7 @@ document.addEventListener('DOMContentLoaded', () => {
     gsInput.addEventListener('input', updateCalculation);
   }
 
-  // 5. 核心計算函數
+  // 6. 核心計算函數
   function updateCalculation() {
     const queryDate = parseLocalDate(queryDateInput.value) || new Date();
 
@@ -207,6 +302,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (resultWeek20Display) resultWeek20Display.textContent = '-- 年 -- 月 -- 日';
         if (resultScanGaDisplay) resultScanGaDisplay.textContent = '-- 週 + - 天';
         currentResult = null;
+        renderMilestoneTable(null);
         return;
       }
 
@@ -220,7 +316,10 @@ document.addEventListener('DOMContentLoaded', () => {
         resultBadge.textContent = `GS ${gsVal}mm`;
       }
 
-      if (!res) return;
+      if (!res) {
+        renderMilestoneTable(null);
+        return;
+      }
       currentResult = res;
 
       resultGaDisplay.textContent = res.gaText;
@@ -229,6 +328,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const week20Date = addDays(res.lmp, 140);
       if (resultWeek20Display) resultWeek20Display.textContent = formatDateChinese(week20Date);
+
+      // 即時渲染左側換算表
+      renderMilestoneTable(res);
       return;
     }
 
@@ -243,6 +345,7 @@ document.addEventListener('DOMContentLoaded', () => {
       resultEddDisplay.textContent = '-- 年 -- 月 -- 日';
       if (resultWeek20Display) resultWeek20Display.textContent = '-- 年 -- 月 -- 日';
       currentResult = null;
+      renderMilestoneTable(null);
       return;
     }
 
@@ -253,7 +356,10 @@ document.addEventListener('DOMContentLoaded', () => {
       res = calculateFromEdd(inputDate, queryDate, 28);
     }
 
-    if (!res) return;
+    if (!res) {
+      renderMilestoneTable(null);
+      return;
+    }
     currentResult = res;
 
     // 渲染最下方結果卡片
@@ -266,9 +372,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (resultWeek20Display) {
       resultWeek20Display.textContent = formatDateChinese(week20Date);
     }
+
+    // 即時渲染左側換算表
+    renderMilestoneTable(res);
   }
 
   // 首次執行
   updateCalculation();
 });
-

@@ -8,7 +8,7 @@ struct ContentView: View {
                 .ignoresSafeArea()
             
             WebViewContainer()
-                .ignoresSafeArea(.keyboard, edges: .bottom)
+                .ignoresSafeArea()
         }
     }
 }
